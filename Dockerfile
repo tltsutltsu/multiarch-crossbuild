@@ -1,8 +1,14 @@
-FROM buildpack-deps:stretch-curl
-MAINTAINER Manfred Touron <m@42.am> (https://github.com/moul)
+FROM buildpack-deps:hirsute-curl
+
+LABEL maintainer="Manfred Touron <m@42.am> (https://github.com/moul), andersonincorp (https://github.com/andersonincorp)"
+
+#
+RUN sed -i -e '/^\s*#.*$/d' -e '/^\s*$/d' /etc/apt/sources.list \
+ && sed -i 's/deb http/deb [arch=amd64,i386] http/g' /etc/apt/sources.list \
+ && echo "deb [arch=arm64,armhf,ppc64el] http://ports.ubuntu.com/ hirsute main universe" >> /etc/apt/sources.list
 
 # Install deps
-RUN set -x; echo "Starting image build for Debian Stretch" \
+RUN set -x \
  && dpkg --add-architecture arm64                      \
  && dpkg --add-architecture armel                      \
  && dpkg --add-architecture armhf                      \
@@ -58,7 +64,9 @@ RUN apt-get install -y mingw-w64 \
 
 # Install OSx cross-tools
 
-#Build arguments
+# TODO: Upgrade to newer SDK && osxcross version, see https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=apple-darwin-osxcross
+
+# Build arguments
 ARG osxcross_repo="tpoechtrager/osxcross"
 ARG osxcross_revision="542acc2ef6c21aeb3f109c03748b1015a71fed63"
 ARG darwin_sdk_version="10.10"
@@ -97,6 +105,7 @@ ENV LINUX_TRIPLES=arm-linux-gnueabi,arm-linux-gnueabihf,aarch64-linux-gnu,mipsel
     WINDOWS_TRIPLES=i686-w64-mingw32,x86_64-w64-mingw32                                                                           \
     CROSS_TRIPLE=x86_64-linux-gnu
 COPY ./assets/osxcross-wrapper /usr/bin/osxcross-wrapper
+RUN chmod +x /usr/bin/osxcross-wrapper
 RUN mkdir -p /usr/x86_64-linux-gnu;                                                               \
     for triple in $(echo ${LINUX_TRIPLES} | tr "," " "); do                                       \
       for bin in /usr/bin/$triple-*; do                                                           \
@@ -109,7 +118,7 @@ RUN mkdir -p /usr/x86_64-linux-gnu;                                             
           ln -s gcc /usr/$triple/bin/cc;                                                          \
         fi;                                                                                       \
       done;                                                                                       \
-    done &&                                                                                       \
+    done;                                                                                         \
     for triple in $(echo ${DARWIN_TRIPLES} | tr "," " "); do                                      \
       mkdir -p /usr/$triple/bin;                                                                  \
       for bin in /usr/osxcross/bin/$triple-*; do                                                  \
@@ -135,7 +144,9 @@ RUN mkdir -p /usr/x86_64-linux-gnu;                                             
 ENV LD_LIBRARY_PATH /usr/osxcross/lib:$LD_LIBRARY_PATH
 
 # Image metadata
+COPY ./assets/crossbuild /usr/bin/crossbuild
+RUN chmod +x /usr/bin/crossbuild
+
+WORKDIR /workdir
 ENTRYPOINT ["/usr/bin/crossbuild"]
 CMD ["/bin/bash"]
-WORKDIR /workdir
-COPY ./assets/crossbuild /usr/bin/crossbuild
