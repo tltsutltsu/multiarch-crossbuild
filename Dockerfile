@@ -142,6 +142,7 @@ RUN mkdir -p /usr/x86_64-linux-gnu;                                             
 # with more and more parameters
 
 ENV LD_LIBRARY_PATH /usr/osxcross/lib:$LD_LIBRARY_PATH
+ENV PATH /usr/osxcross/bin:$PATH
 
 # Image metadata
 COPY ./assets/crossbuild /usr/bin/crossbuild
