@@ -1,11 +1,11 @@
-FROM buildpack-deps:hirsute-curl
+FROM buildpack-deps:jammy-curl
 
 LABEL maintainer="Manfred Touron <m@42.am> (https://github.com/moul), andersonincorp (https://github.com/andersonincorp)"
 
 #
 RUN sed -i -e '/^\s*#.*$/d' -e '/^\s*$/d' /etc/apt/sources.list \
  && sed -i 's/deb http/deb [arch=amd64,i386] http/g' /etc/apt/sources.list \
- && echo "deb [arch=arm64,armhf,ppc64el] http://ports.ubuntu.com/ hirsute main universe" >> /etc/apt/sources.list
+ && echo "deb [arch=arm64,armhf,ppc64el] http://ports.ubuntu.com/ jammy main universe" >> /etc/apt/sources.list
 
 # Install deps
 RUN set -x \
