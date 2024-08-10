@@ -1,10 +1,9 @@
-docker-build-master:
-  name: Build
+name: Build
 
-  on:
-    push:
-      branches:
-        - master
+on:
+  push:
+    branches:
+      - master
 
   jobs:
     build:
